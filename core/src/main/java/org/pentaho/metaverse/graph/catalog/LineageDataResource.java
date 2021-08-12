@@ -10,6 +10,7 @@ public class LineageDataResource {
   private List<String> fields;
   private List<FieldLevelRelationship> fieldRelationships = new ArrayList<>();
   private String catalogResourceID;
+  private Object vertexId;
 
   public LineageDataResource(String name ) {
     this.name = name;
@@ -49,5 +50,13 @@ public class LineageDataResource {
 
   public String getCatalogResourceID() {
     return catalogResourceID;
+  }
+
+  public Object getVertexId() {
+    return vertexId;
+  }
+
+  public void setVertexId( Object vertexId ) {
+    this.vertexId = vertexId;
   }
 }
