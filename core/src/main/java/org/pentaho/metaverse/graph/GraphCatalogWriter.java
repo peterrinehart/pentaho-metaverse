@@ -102,7 +102,8 @@ public class GraphCatalogWriter extends BaseGraphWriter {
       if ( propertyPopulated( queryString ) ) {
         LineageDataResource dataResource = new LineageDataResource( queryString );
         dataResource.setVertexId( vertex.getId() );
-        dataResource.setPath( queryString );
+        //dataResource.setPath( queryString );
+        findDbConnectionProperties( vertex, dataResource, DictionaryConst.LINK_READBY );
         dataResource.setFields( getQueryFields( queryString, graph ) );
         inputSources.add( dataResource );
       }
@@ -133,8 +134,10 @@ public class GraphCatalogWriter extends BaseGraphWriter {
         if ( propertyPopulated( tableName ) ) {
           LineageDataResource dataResource = new LineageDataResource( tableName );
           dataResource.setVertexId( vertex.getId() );
-          dataResource.setPath( tableName );
+          //dataResource.setPath( tableName );
+          findDbConnectionProperties( vertex, dataResource, DictionaryConst.LINK_WRITESTO );
           dataResource.setFields( getTableFields( tableName, graph ) );
+          dataResource.setDbSchema( vertex.getProperty( DictionaryConst.PROPERTY_SCHEMA ) );
           outputTargets.add( dataResource );
         }
       }
@@ -150,6 +153,35 @@ public class GraphCatalogWriter extends BaseGraphWriter {
     }
 
     log.info( "Lineage processing done." );
+  }
+
+  private void findDbConnectionProperties( Vertex vertex, LineageDataResource dataResource, String readOrWrite ) {
+    Direction stepNodeDirection = readOrWrite.equals( DictionaryConst.LINK_READBY ) ? Direction.IN : Direction.OUT;
+    Direction stepEdgeDirection = readOrWrite.equals( DictionaryConst.LINK_READBY ) ? Direction.OUT : Direction.IN;
+    Iterator<Edge> queryEdges = vertex.getEdges( stepEdgeDirection ).iterator();
+    while ( queryEdges.hasNext() ) {
+      Edge queryEdge = queryEdges.next();
+      // find the step that reads this query
+      if ( queryEdge.getLabel().equals( readOrWrite ) &&
+        hasPropertyValue( queryEdge.getVertex( stepNodeDirection )
+          , DictionaryConst.PROPERTY_TYPE
+          , DictionaryConst.NODE_TYPE_TRANS_STEP ) ) {
+        Vertex tableStep = queryEdge.getVertex( stepNodeDirection );
+        Iterator<Edge> tableStepEdges = tableStep.getEdges( Direction.IN ).iterator();
+        while( tableStepEdges.hasNext() ) {
+          Edge tableEdge = tableStepEdges.next();
+          // find the DB connection that is a dependency of this table input step
+          if ( tableEdge.getLabel().equals( DictionaryConst.LINK_DEPENDENCYOF ) &&
+            hasPropertyValue( tableEdge.getVertex( Direction.OUT )
+              , DictionaryConst.PROPERTY_TYPE
+              , DictionaryConst.NODE_TYPE_DATASOURCE ) ) {
+            Vertex dbNode = tableEdge.getVertex( Direction.OUT );
+            dataResource.setDbHost( dbNode.getProperty( DictionaryConst.PROPERTY_HOST_NAME ) );
+            dataResource.setDbName( dbNode.getProperty( DictionaryConst.PROPERTY_DATABASE_NAME ) );
+          }
+        }
+      }
+    }
   }
 
   private String getSourceName( String fullName ) {
@@ -302,5 +334,10 @@ public class GraphCatalogWriter extends BaseGraphWriter {
 
   private boolean propertyPopulated( String propertyVal ) {
     return null != propertyVal && !"".equals( propertyVal );
+  }
+
+  private boolean hasPropertyValue( Vertex v, String propertyName, String propertyVal ) {
+    String vertexPropertyValue = v.getProperty( propertyName );
+    return propertyPopulated( vertexPropertyValue ) && vertexPropertyValue.equals( propertyVal );
   }
 }

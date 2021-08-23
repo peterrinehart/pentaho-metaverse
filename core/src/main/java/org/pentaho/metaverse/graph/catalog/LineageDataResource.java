@@ -11,6 +11,9 @@ public class LineageDataResource {
   private List<FieldLevelRelationship> fieldRelationships = new ArrayList<>();
   private String catalogResourceID;
   private Object vertexId;
+  private String dbSchema;
+  private String dbHost;
+  private String dbName;
 
   public LineageDataResource(String name ) {
     this.name = name;
@@ -58,5 +61,29 @@ public class LineageDataResource {
 
   public void setVertexId( Object vertexId ) {
     this.vertexId = vertexId;
+  }
+
+  public String getDbSchema() {
+    return dbSchema;
+  }
+
+  public void setDbSchema( String dbSchema ) {
+    this.dbSchema = dbSchema;
+  }
+
+  public String getDbHost() {
+    return dbHost;
+  }
+
+  public void setDbHost( String dbHost ) {
+    this.dbHost = dbHost;
+  }
+
+  public String getDbName() {
+    return dbName;
+  }
+
+  public void setDbName( String dbName ) {
+    this.dbName = dbName;
   }
 }

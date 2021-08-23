@@ -104,6 +104,11 @@ public class CatalogLineageClient {
     } );
   }
 
+  // TODO: this needs to be greatly improved to ensure we do the most precise search possible
+  // Since transformations reading from S3/minio and other cloud storage locations don't contain the connection
+  // details, we may need to search by path and file name and hope that there aren't multiple data sources
+  // in the catalog with the same folder/file structures.
+  // Need to search for DB tables by host/database/schema/table
   private String searchResourceByName( String resourceName ) {
 
     String resourceId = null;
