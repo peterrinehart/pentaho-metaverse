@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.pentaho.di.plugins.catalog.api.CatalogClient;
 import com.pentaho.di.plugins.catalog.api.CatalogClientException;
 import com.pentaho.di.plugins.catalog.api.entities.DataResource;
+import com.pentaho.di.plugins.catalog.api.entities.DataSource;
 import com.pentaho.di.plugins.catalog.api.entities.search.Facet;
 import com.pentaho.di.plugins.catalog.api.entities.search.PagingCriteria;
 import com.pentaho.di.plugins.catalog.api.entities.search.SearchCriteria;
@@ -25,6 +26,7 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
+import javax.sound.sampled.Line;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -102,6 +104,66 @@ public class CatalogLineageClient {
         dataResource.setCatalogResourceID( id );
       }
     } );
+  }
+
+  private void populateDataResourceId( LineageDataResource lineageDataResource ) {
+    List<DataResource> dataResourceList = getResourcesByName( lineageDataResource.getName() );
+    DataResource catalogMatchResource = null;
+    for ( DataResource dataResource : getResourcesByName( lineageDataResource.getName() ) ) {
+      // loop through candidate matches and try to narrow down by path/data source
+      if ( matchesByPathAndFile( lineageDataResource, dataResource ) ) {
+        catalogMatchResource = dataResource;
+        break;
+      }
+    }
+    log.error( String.format( "Unable to find resource %s in catalog", lineageDataResource.getName() ) );
+  }
+
+  private boolean matchesByPathAndFile( LineageDataResource lineageDataResource, DataResource catalogDataResource ) {
+    return null != lineageDataResource.getPath()
+      && catalogDataResource.getResourcePath().endsWith( lineageDataResource.getName() )
+      && catalogDataResource.getResourcePath().equals( lineageDataResource.getPath() );
+  }
+
+  private boolean matchesByDbName( LineageDataResource lineageDataResource, DataResource catalogDataResource )
+    throws CatalogClientException {
+    if ( null != lineageDataResource.getDbHost() ) {
+      DataSource dataSource = getCatalogClient().getDataSources().read( catalogDataResource.getDataSourceKey() );
+      //TODO: current API does not return all fields from data source such as jdbc URL, port, etc.
+      // Need that info in order to match to a data source and thus confirm we have the correct item
+      return false;
+    } else {
+      return false;
+    }
+  }
+
+  private boolean notNullAndMatches( String s1, String s2 ) {
+    return null != s1 && null != s2 && s1.equals( s2 );
+  }
+
+  private List<DataResource> getResourcesByName( String resourceName ) {
+    try {
+
+      SearchCriteria.SearchCriteriaBuilder searchCriteriaBuilder = new SearchCriteria.SearchCriteriaBuilder();
+      searchCriteriaBuilder.searchPhrase( resourceName );
+      searchCriteriaBuilder.addFacet( Facet.RESOURCE_TAGS, "" );
+      searchCriteriaBuilder.addFacet( Facet.VIRTUAL_FOLDERS, "" );
+      searchCriteriaBuilder.addFacet( Facet.DATA_SOURCES, "" );
+      searchCriteriaBuilder.addFacet( Facet.RESOURCE_TYPE, "" );
+      searchCriteriaBuilder.addFacet( Facet.FILE_SIZE, "" );
+      searchCriteriaBuilder.addFacet( Facet.FILE_FORMAT, "" );
+      searchCriteriaBuilder.pagingCriteria( new PagingCriteria( 0, StringUtils.isNumeric( "1000" ) ? Integer.valueOf( "1000" ) : CATALOG_DEFAULT_LIMIT ) )
+        .sortBySpecs( Collections.singletonList( new SortBySpecs( ReadPayload.SCORE, false ) ) )
+        .entityScope( Collections.singletonList( ReadPayload.DATA_RESOURCE ) ).searchType( ReadPayload.ADVANCED )
+        .preformedQuery( false ).showCollectionMembers( true ).build();
+
+      CatalogClient catalogClient = getCatalogClient();
+      return catalogClient.getSearch().doNew( searchCriteriaBuilder.build() ).getEntities();
+
+    } catch ( CatalogClientException e ) {
+      log.error( e.getMessage(), e );
+      return null;
+    }
   }
 
   // TODO: this needs to be greatly improved to ensure we do the most precise search possible
