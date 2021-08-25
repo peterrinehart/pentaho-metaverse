@@ -14,9 +14,17 @@ public class LineageDataResource {
   private String dbSchema;
   private String dbHost;
   private String dbName;
+  private String dbPort;
 
   public LineageDataResource(String name ) {
     this.name = name;
+    path = "";
+    catalogResourceID = "";
+    vertexId = null;
+    dbSchema = "";
+    dbHost = "";
+    dbName = "";
+    dbPort = "";
   }
 
   public String getName() {
@@ -85,5 +93,23 @@ public class LineageDataResource {
 
   public void setDbName( String dbName ) {
     this.dbName = dbName;
+  }
+
+  public String getDbPort() {
+    return dbPort;
+  }
+
+  public void setDbPort( String dbPort ) {
+    this.dbPort = dbPort;
+  }
+
+  @Override
+  public String toString() {
+    return "name: ".concat( name )
+      .concat( " path: " ).concat( path )
+      .concat( " catalogResourceId: " ).concat( catalogResourceID )
+      .concat( " dbHost: " ).concat( dbHost )
+      .concat( " dbPort: " ).concat( dbPort )
+      .concat( " dbSchema: " ).concat( dbSchema );
   }
 }

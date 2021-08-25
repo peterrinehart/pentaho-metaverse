@@ -26,7 +26,6 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
-import javax.sound.sampled.Line;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -39,12 +38,12 @@ public class CatalogLineageClient {
 
   private static final Logger log = LogManager.getLogger( CatalogLineageClient.class );
 
-  private String catalogUrl;
-  private String catalogUsername;
-  private String catalogPassword;
-  private String catalogTokenUrl;
-  private String catalogClientId;
-  private String catalogClientSecret;
+  private final String catalogUrl;
+  private final String catalogUsername;
+  private final String catalogPassword;
+  private final String catalogTokenUrl;
+  private final String catalogClientId;
+  private final String catalogClientSecret;
 
   public CatalogLineageClient( String catalogUrl,
                                   String catalogUsername,
@@ -60,7 +59,7 @@ public class CatalogLineageClient {
     this.catalogClientSecret = catalogClientSecret;
   }
 
-  public void processLineage( List<LineageDataResource> inputSources, List<LineageDataResource> outputTargets ) throws Exception {
+  public void processLineage( List<LineageDataResource> inputSources, List<LineageDataResource> outputTargets ) {
 
     getExistingResourceIDs( inputSources );
     getExistingResourceIDs( outputTargets );
@@ -99,46 +98,54 @@ public class CatalogLineageClient {
 
   private void getExistingResourceIDs( List<LineageDataResource> dataResources ) {
     dataResources.forEach( dataResource -> {
-      String id = searchResourceByName( dataResource.getName() );
-      if ( id != null ) {
-        dataResource.setCatalogResourceID( id );
+      try {
+        populateDataResourceId( dataResource );
+      } catch ( Exception e ) {
+        log.error( "Error trying to populate resource id", e );
       }
     } );
   }
 
-  private void populateDataResourceId( LineageDataResource lineageDataResource ) {
+  private void populateDataResourceId( LineageDataResource lineageDataResource ) throws CatalogClientException {
     List<DataResource> dataResourceList = getResourcesByName( lineageDataResource.getName() );
     DataResource catalogMatchResource = null;
+    log.debug( String.format( "Populating resource ID for %s", lineageDataResource ) );
     for ( DataResource dataResource : getResourcesByName( lineageDataResource.getName() ) ) {
       // loop through candidate matches and try to narrow down by path/data source
-      if ( matchesByPathAndFile( lineageDataResource, dataResource ) ) {
+      if ( matchesByPathAndFile( lineageDataResource, dataResource )
+        || matchesByDb( lineageDataResource, dataResource ) ) {
         catalogMatchResource = dataResource;
         break;
       }
     }
-    log.error( String.format( "Unable to find resource %s in catalog", lineageDataResource.getName() ) );
-  }
-
-  private boolean matchesByPathAndFile( LineageDataResource lineageDataResource, DataResource catalogDataResource ) {
-    return null != lineageDataResource.getPath()
-      && catalogDataResource.getResourcePath().endsWith( lineageDataResource.getName() )
-      && catalogDataResource.getResourcePath().equals( lineageDataResource.getPath() );
-  }
-
-  private boolean matchesByDbName( LineageDataResource lineageDataResource, DataResource catalogDataResource )
-    throws CatalogClientException {
-    if ( null != lineageDataResource.getDbHost() ) {
-      DataSource dataSource = getCatalogClient().getDataSources().read( catalogDataResource.getDataSourceKey() );
-      //TODO: current API does not return all fields from data source such as jdbc URL, port, etc.
-      // Need that info in order to match to a data source and thus confirm we have the correct item
-      return false;
+    if ( null != catalogMatchResource ) {
+      lineageDataResource.setCatalogResourceID( catalogMatchResource.getKey() );
     } else {
-      return false;
+      log.error( String.format( "Unable to find resource %s in catalog", lineageDataResource.getName() ) );
     }
   }
 
-  private boolean notNullAndMatches( String s1, String s2 ) {
-    return null != s1 && null != s2 && s1.equals( s2 );
+  private boolean matchesByPathAndFile( LineageDataResource lineageDataResource, DataResource catalogDataResource ) {
+    log.debug( String.format( "Checking catalog resource path %s", catalogDataResource.getResourcePath() ) );
+    return null != lineageDataResource.getPath()
+      && catalogDataResource.getResourcePath().endsWith( lineageDataResource.getName() );
+      //&& catalogDataResource.getResourcePath().equals( lineageDataResource.getPath() );
+  }
+
+  private boolean matchesByDb( LineageDataResource lineageDataResource, DataResource catalogDataResource )
+    throws CatalogClientException {
+    if ( null != lineageDataResource.getDbHost() ) {
+      DataSource dataSource = getCatalogClient().getDataSources().read( catalogDataResource.getDataSourceKey() );
+      log.debug( String.format( "Checking catalog resource jdbcUrl %s, dbName %s, schemaName %s, tableName %s"
+        , dataSource.getJdbcUrl(), catalogDataResource.getDatabaseName(), catalogDataResource.getDataSchemaName(), catalogDataResource.getTableName() ) );
+      //TODO: this search likely needs further refinement; need to understand how db resources are populated
+      return dataSource.getJdbcUrl().contains( lineageDataResource.getDbHost() + ":" + lineageDataResource.getDbPort() )
+        && catalogDataResource.getDatabaseName().equals( lineageDataResource.getDbName() )
+        && catalogDataResource.getDataSchemaName().equals( lineageDataResource.getDbSchema() )
+        && catalogDataResource.getTableName().equals( lineageDataResource.getName() );
+    } else {
+      return false;
+    }
   }
 
   private List<DataResource> getResourcesByName( String resourceName ) {
