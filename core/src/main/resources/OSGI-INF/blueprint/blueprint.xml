@@ -632,8 +632,8 @@
   </bean>
 
   <bean id="lineageWriter" class="org.pentaho.metaverse.impl.VfsLineageWriter" scope="prototype">
-    <property name="graphWriter" ref="graphCatalogWriter"/>
-<!--    <property name="graphWriter" ref="graphMLWriter"/>-->
+    <property name="catalogWriter" ref="graphCatalogWriter"/>
+    <property name="graphWriter" ref="graphMLWriter"/>
     <property name="outputFolder" value="${lineage.execution.output.folder}"/>
     <property name="outputStrategy" value="${lineage.execution.generation.strategy}"/>
   </bean>

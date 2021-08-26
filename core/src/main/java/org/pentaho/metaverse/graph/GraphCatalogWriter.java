@@ -22,6 +22,7 @@
 
 package org.pentaho.metaverse.graph;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Graph;
@@ -69,6 +70,15 @@ public class GraphCatalogWriter extends BaseGraphWriter {
             catalogTokenUrl,
             catalogClientId,
             catalogClientSecret );
+  }
+
+  @VisibleForTesting
+  GraphCatalogWriter( CatalogLineageClient client ) {
+    lineageClient = client;
+  }
+
+  public boolean clientConfigured() {
+    return lineageClient.urlConfigured();
   }
 
   @Override

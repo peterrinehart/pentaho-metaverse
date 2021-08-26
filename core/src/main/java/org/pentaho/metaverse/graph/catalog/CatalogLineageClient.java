@@ -107,21 +107,27 @@ public class CatalogLineageClient {
   }
 
   private void populateDataResourceId( LineageDataResource lineageDataResource ) throws CatalogClientException {
-    List<DataResource> dataResourceList = getResourcesByName( lineageDataResource.getName() );
-    DataResource catalogMatchResource = null;
+    List<DataResource> catalogMatchResource = new ArrayList<>();
     log.debug( String.format( "Populating resource ID for %s", lineageDataResource ) );
     for ( DataResource dataResource : getResourcesByName( lineageDataResource.getName() ) ) {
       // loop through candidate matches and try to narrow down by path/data source
       if ( matchesByPathAndFile( lineageDataResource, dataResource )
         || matchesByDb( lineageDataResource, dataResource ) ) {
-        catalogMatchResource = dataResource;
-        break;
+        catalogMatchResource.add( dataResource );
       }
     }
-    if ( null != catalogMatchResource ) {
-      lineageDataResource.setCatalogResourceID( catalogMatchResource.getKey() );
-    } else {
+
+    if ( catalogMatchResource.size() == 1 ) {
+      lineageDataResource.setCatalogResourceID( catalogMatchResource.get( 0 ).getKey() );
+    } else if ( catalogMatchResource.size() == 0 ) {
       log.error( String.format( "Unable to find resource %s in catalog", lineageDataResource.getName() ) );
+    } else {
+      log.error( String.format( "Multiple matches for resource %s in catalog: ", lineageDataResource.getName() ) );
+      for ( DataResource dataResource : catalogMatchResource ) {
+        log.error( String.format( "key: %s path: %s tableName: %s schema: %s dbName: %s dataSource: %s"
+          , dataResource.getKey(), dataResource.getResourcePath(), dataResource.getTableName()
+          , dataResource.getDataSchemaName(), dataResource.getDatabaseName(), dataResource.getDataSourceName() ) );
+      }
     }
   }
 
@@ -129,6 +135,7 @@ public class CatalogLineageClient {
     log.debug( String.format( "Checking catalog resource path %s", catalogDataResource.getResourcePath() ) );
     return null != lineageDataResource.getPath()
       && catalogDataResource.getResourcePath().endsWith( lineageDataResource.getName() );
+    // TODO: uncomment this when running against a real LDOS cluster and using the same resources as in the catalog
       //&& catalogDataResource.getResourcePath().equals( lineageDataResource.getPath() );
   }
 
@@ -173,11 +180,7 @@ public class CatalogLineageClient {
     }
   }
 
-  // TODO: this needs to be greatly improved to ensure we do the most precise search possible
-  // Since transformations reading from S3/minio and other cloud storage locations don't contain the connection
-  // details, we may need to search by path and file name and hope that there aren't multiple data sources
-  // in the catalog with the same folder/file structures.
-  // Need to search for DB tables by host/database/schema/table
+  // deprecated; worked for protoype but needs to do more
   private String searchResourceByName( String resourceName ) {
 
     String resourceId = null;
@@ -382,5 +385,10 @@ public class CatalogLineageClient {
       }
     }
     return catalogIDsFound;
+  }
+
+  public boolean urlConfigured() {
+    return null != catalogUrl && !catalogUrl.isEmpty()
+      && !catalogUrl.equalsIgnoreCase( "${lineage.catalog.url}" );
   }
 }
