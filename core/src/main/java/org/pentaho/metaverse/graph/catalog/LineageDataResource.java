@@ -112,4 +112,26 @@ public class LineageDataResource {
       .concat( " dbPort: " ).concat( dbPort )
       .concat( " dbSchema: " ).concat( dbSchema );
   }
+
+  @Override
+  public boolean equals( Object o ) {
+    if ( o instanceof LineageDataResource ) {
+      LineageDataResource r2 = ( LineageDataResource ) o;
+      return safeStringMatch( this.getName(), r2.getName() )
+        && ( safeStringMatch( this.getPath(), r2.getPath() ) || safeStringMatch( this.getDbSchema(),
+        r2.getDbSchema() ) )
+        && safeListMatch( this.getFields(), r2.getFields() );
+    } else {
+      return false;
+    }
+  }
+
+  private boolean safeStringMatch( String s1, String s2 ) {
+    return ( s1 != null && s1.equals( s2 ) ) || ( s1 == null && s2 == null );
+  }
+
+  private boolean safeListMatch( List l1, List l2 ) {
+    return ( l1 != null && l2 != null && l1.containsAll( l2 ) && l2.containsAll( l1 ) ) || ( l1 == null && l2 == null );
+  }
+
 }

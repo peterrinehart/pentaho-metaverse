@@ -30,10 +30,15 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.pentaho.metaverse.frames.TransformationNode;
 import org.pentaho.metaverse.graph.catalog.CatalogLineageClient;
+import org.pentaho.metaverse.graph.catalog.FieldLevelRelationship;
 import org.pentaho.metaverse.graph.catalog.LineageDataResource;
 import org.pentaho.metaverse.step.StepAnalyzerValidationIT;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class GraphCatalogWriterIT extends StepAnalyzerValidationIT {
   @Mock CatalogLineageClient mockCatalogLineageClient;
@@ -50,8 +55,55 @@ public class GraphCatalogWriterIT extends StepAnalyzerValidationIT {
 
     graphCatalogWriter.outputGraphImpl( graph, null );
 
+    LineageDataResource personCsv = new LineageDataResource( "person.csv" );
+    personCsv.setPath( "/Users/aramos/Documents/Hitachi/REPOS/R2D2-DEV/CatalogTestKTR/person.csv" );
+    List<String> personFields = Arrays.asList( "first_name", "id", "lasy_name" );
+    personCsv.setFields( personFields );
+    LineageDataResource personDetailsCsv = new LineageDataResource( "person_details.csv" );
+    personDetailsCsv.setPath( "/Users/aramos/Documents/Hitachi/REPOS/R2D2-DEV/CatalogTestKTR/person_details.csv" );
+    List<String> personDetailsFields = Arrays.asList( "gender", "ip_address", "id", "age", "email" );
+    personDetailsCsv.setFields( personDetailsFields );
+    LineageDataResource outputTarget = new LineageDataResource( "CombinedCsvToTextOut.csv" );
+    outputTarget.setPath( "/Users/aramos/Documents/Hitachi/REPOS/R2D2-DEV/CatalogTestKTR/out/CombinedCsvToTextOut.csv" );
+    List<String> outputFields = Arrays.asList( "GIVEN", "HOST", "SUR", "SPAN", "USERNAME", "LONG_LEGAL", "SSN", "SEX" );
+    outputTarget.setFields( outputFields );
+    addRelationship( personCsv, outputTarget, "first_name", "GIVEN" );
+    addRelationship( personCsv, outputTarget, "last_name", "SUR" );
+    addRelationship( personCsv, outputTarget, "id", "SSN" );
+    addRelationship( personDetailsCsv, outputTarget, "ip_address", "HOST" );
+    addRelationship( personDetailsCsv, outputTarget, "age", "SPAN" );
+    addRelationship( personDetailsCsv, outputTarget, "email", "USERNAME" );
+    addRelationship( personDetailsCsv, outputTarget, "gender", "SEX" );
+    
     Mockito.verify( mockCatalogLineageClient ).processLineage( inputSourceCaptor.capture(), outputSourcesCaptor.capture() );
-    Assert.assertNotNull( "input sources must not be null", inputSourceCaptor.getValue() );
-    // TODO: better validation here
+    List<LineageDataResource> inputSources = inputSourceCaptor.getValue();
+    Assert.assertNotNull( "input sources must not be null", inputSources );
   }
+
+  private void addRelationship( LineageDataResource input, LineageDataResource output, String inputField, String outputField ) {
+    FieldLevelRelationship r1 = new FieldLevelRelationship();
+    r1.setInputSourceResource( input );
+    r1.setOutputTargetResource( output );
+    r1.setInputSourceResourceField( inputField );
+    r1.setOutputTargetResourceField( outputField );
+    input.addFieldLevelRelationship( r1 );
+    output.addFieldLevelRelationship( r1 );
+  }
+
+  private Optional<LineageDataResource> findInList( List<LineageDataResource> list, LineageDataResource resource ) {
+    boolean found = false;
+    List<LineageDataResource> possibleMatches = list.stream().filter( r ->
+      // name and path are not null and match
+      ( resource.getName() != null && r.getName() != null && r.getName().equals( resource.getName() )
+      && ( ( resource.getPath() != null && r.getPath() != null && r.getPath().equals( resource.getPath() ) )
+      || // table name and schema are not null and match
+        ( resource.getDbSchema() != null && r.getDbName() != null && r.getDbSchema().equals( resource.getDbSchema() ) )
+      ) ) )
+      .collect( Collectors.toList() );
+
+    return possibleMatches.stream().filter( r -> r.getFields().containsAll( resource.getFields() )
+         && resource.getFields().containsAll( r.getFields() ) ).findFirst();
+  }
+
+
 }

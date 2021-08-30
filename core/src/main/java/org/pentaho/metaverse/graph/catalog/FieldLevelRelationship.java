@@ -45,4 +45,23 @@ public class FieldLevelRelationship {
             + " -> "
             + outputTargetResource.getName() + ":" + outputTargetResourceField;
   }
+
+  @Override
+  public boolean equals( Object o ) {
+    if ( o instanceof FieldLevelRelationship ) {
+      FieldLevelRelationship r2 = ( FieldLevelRelationship ) o;
+      return ( ( this.inputSourceResource != null && r2.inputSourceResource != null && this.inputSourceResource.equals( r2.inputSourceResource ) )
+        || ( this.inputSourceResource == null && r2.inputSourceResource == null ) )
+        && ( ( this.outputTargetResource != null && r2.outputTargetResource != null && this.outputTargetResource.equals( r2.outputTargetResource ) )
+        || ( this.outputTargetResource == null && r2.outputTargetResource == null ) )
+        && safeStringMatch( this.inputSourceResourceField, r2.inputSourceResourceField )
+        && safeStringMatch( this.outputTargetResourceField, r2.outputTargetResourceField );
+    } else {
+      return false;
+    }
+  }
+
+  private boolean safeStringMatch( String s1, String s2 ) {
+    return ( s1 != null && s1.equals( s2 ) ) || ( s1 == null && s2 == null );
+  }
 }
