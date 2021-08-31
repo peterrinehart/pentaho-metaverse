@@ -1,11 +1,30 @@
 package org.pentaho.metaverse.graph.catalog;
 
+import java.util.Objects;
+
+import static org.pentaho.metaverse.util.MetaverseUtil.safeStringMatch;
+
 public class FieldLevelRelationship {
 
   private LineageDataResource inputSourceResource;
   private String inputSourceResourceField;
   private LineageDataResource outputTargetResource;
   private String outputTargetResourceField;
+
+  public FieldLevelRelationship() {
+    inputSourceResourceField = null;
+    inputSourceResource = null;
+    outputTargetResourceField = null;
+    outputTargetResource = null;
+  }
+
+  public FieldLevelRelationship( LineageDataResource inputSourceResource, LineageDataResource outputTargetResource,
+                                 String inputSourceResourceField, String outputTargetResourceField ) {
+    this.inputSourceResource = inputSourceResource;
+    this.outputTargetResource = outputTargetResource;
+    this.inputSourceResourceField = inputSourceResourceField;
+    this.outputTargetResourceField = outputTargetResourceField;
+  }
 
   public LineageDataResource getInputSourceResource() {
     return inputSourceResource;
@@ -61,7 +80,8 @@ public class FieldLevelRelationship {
     }
   }
 
-  private boolean safeStringMatch( String s1, String s2 ) {
-    return ( s1 != null && s1.equals( s2 ) ) || ( s1 == null && s2 == null );
+  @Override
+  public int hashCode() {
+    return Objects.hash( inputSourceResource, inputSourceResourceField, outputTargetResource, outputTargetResourceField );
   }
 }

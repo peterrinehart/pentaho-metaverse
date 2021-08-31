@@ -2,13 +2,17 @@ package org.pentaho.metaverse.graph.catalog;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+
+import static org.pentaho.metaverse.util.MetaverseUtil.safeListMatch;
+import static org.pentaho.metaverse.util.MetaverseUtil.safeStringMatch;
 
 public class LineageDataResource {
 
-  private String name;
+  private final String name;
   private String path;
   private List<String> fields;
-  private List<FieldLevelRelationship> fieldRelationships = new ArrayList<>();
+  private final List<FieldLevelRelationship> fieldRelationships = new ArrayList<>();
   private String catalogResourceID;
   private Object vertexId;
   private String dbSchema;
@@ -126,12 +130,9 @@ public class LineageDataResource {
     }
   }
 
-  private boolean safeStringMatch( String s1, String s2 ) {
-    return ( s1 != null && s1.equals( s2 ) ) || ( s1 == null && s2 == null );
-  }
-
-  private boolean safeListMatch( List l1, List l2 ) {
-    return ( l1 != null && l2 != null && l1.containsAll( l2 ) && l2.containsAll( l1 ) ) || ( l1 == null && l2 == null );
+  @Override
+  public int hashCode() {
+    return Objects.hash( name, path, fields, fieldRelationships, catalogResourceID, vertexId, dbSchema, dbName, dbHost, dbPort );
   }
 
 }
