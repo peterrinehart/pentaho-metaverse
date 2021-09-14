@@ -20,11 +20,11 @@
  *
  ******************************************************************************/
 
-package org.pentaho.metaverse.graph;
+package org.pentaho.metaverse.api.model.catalog;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.pentaho.metaverse.graph.catalog.LineageDataResource;
+import org.pentaho.metaverse.api.model.catalog.LineageDataResource;
 
 public class LineageDataResourceTest {
 

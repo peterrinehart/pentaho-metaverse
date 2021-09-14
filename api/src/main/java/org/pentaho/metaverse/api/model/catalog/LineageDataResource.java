@@ -20,7 +20,9 @@
  *
  ******************************************************************************/
 
-package org.pentaho.metaverse.graph.catalog;
+package org.pentaho.metaverse.api.model.catalog;
+
+import org.pentaho.metaverse.api.analyzer.kettle.KettleAnalyzerUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,8 +30,8 @@ import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static org.pentaho.metaverse.util.MetaverseUtil.safeListMatch;
-import static org.pentaho.metaverse.util.MetaverseUtil.safeStringMatch;
+import static org.pentaho.metaverse.api.analyzer.kettle.KettleAnalyzerUtil.safeListMatch;
+import static org.pentaho.metaverse.api.analyzer.kettle.KettleAnalyzerUtil.safeStringMatch;
 
 public class LineageDataResource {
 

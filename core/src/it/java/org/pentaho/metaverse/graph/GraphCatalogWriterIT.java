@@ -23,33 +23,43 @@
 package org.pentaho.metaverse.graph;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.pentaho.metaverse.graph.catalog.CatalogLineageClient;
-import org.pentaho.metaverse.graph.catalog.FieldLevelRelationship;
-import org.pentaho.metaverse.graph.catalog.LineageDataResource;
+import org.pentaho.metaverse.api.ICatalogLineageClient;
+import org.pentaho.metaverse.api.ICatalogLineageClientProvider;
+import org.pentaho.metaverse.api.model.catalog.FieldLevelRelationship;
+import org.pentaho.metaverse.api.model.catalog.LineageDataResource;
 import org.pentaho.metaverse.step.StepAnalyzerValidationIT;
 
-import javax.sound.sampled.Line;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
+
+import static org.mockito.Matchers.anyString;
 
 public class GraphCatalogWriterIT extends StepAnalyzerValidationIT {
-  @Mock CatalogLineageClient mockCatalogLineageClient;
+  @Mock ICatalogLineageClient mockCatalogLineageClient;
   @Captor ArgumentCaptor<List<LineageDataResource>> inputSourceCaptor;
   @Captor ArgumentCaptor<List<LineageDataResource>> outputSourcesCaptor;
+  @Mock ICatalogLineageClientProvider mockCatalogLineageClientProvider;
+
+  @Before
+  public void setup() {
+    Mockito.when( mockCatalogLineageClientProvider.getCatalogLineageClient( anyString(), anyString(), anyString(), anyString(), anyString(), anyString() ) )
+      .thenReturn( mockCatalogLineageClient );
+  }
 
   @Test
   public void testMultiSource() throws Exception {
     final String transNodeName = "CombineMultiSourceToTarget";
     initTest( transNodeName );
 
-    GraphCatalogWriter graphCatalogWriter = new GraphCatalogWriter( mockCatalogLineageClient );
+    GraphCatalogWriter graphCatalogWriter =
+      new GraphCatalogWriter( "", "", "", "", "", "" );
+    graphCatalogWriter.setCatalogLineageClientProvider( mockCatalogLineageClientProvider );
 
     graphCatalogWriter.outputGraphImpl( graph, null );
 
@@ -115,7 +125,9 @@ public class GraphCatalogWriterIT extends StepAnalyzerValidationIT {
     final String transNodeName = "file_to_db";
     initTest( transNodeName );
 
-    GraphCatalogWriter graphCatalogWriter = new GraphCatalogWriter( mockCatalogLineageClient );
+    GraphCatalogWriter graphCatalogWriter =
+      new GraphCatalogWriter( "", "", "", "", "", "" );
+    graphCatalogWriter.setCatalogLineageClientProvider( mockCatalogLineageClientProvider );
 
     graphCatalogWriter.outputGraphImpl( graph, null );
 

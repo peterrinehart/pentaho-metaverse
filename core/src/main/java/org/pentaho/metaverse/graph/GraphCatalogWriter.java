@@ -22,7 +22,6 @@
 
 package org.pentaho.metaverse.graph;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Graph;
@@ -31,10 +30,13 @@ import com.tinkerpop.gremlin.Tokens;
 import com.tinkerpop.gremlin.java.GremlinPipeline;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
+import org.osgi.service.blueprint.container.ServiceUnavailableException;
 import org.pentaho.dictionary.DictionaryConst;
-import org.pentaho.metaverse.graph.catalog.CatalogLineageClient;
-import org.pentaho.metaverse.graph.catalog.FieldLevelRelationship;
-import org.pentaho.metaverse.graph.catalog.LineageDataResource;
+import org.pentaho.metaverse.api.ICatalogLineageClient;
+import org.pentaho.metaverse.api.ICatalogLineageClientProvider;
+import org.pentaho.metaverse.api.model.catalog.FieldLevelRelationship;
+import org.pentaho.metaverse.api.model.catalog.LineageDataResource;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -53,7 +55,15 @@ public class GraphCatalogWriter extends BaseGraphWriter {
 
   private static final Logger log = LogManager.getLogger( GraphCatalogWriter.class );
 
-  private CatalogLineageClient lineageClient;
+  private ICatalogLineageClient lineageClient;
+  private ICatalogLineageClientProvider catalogLineageClientProvider;
+
+  private String catalogUrl;
+  private String catalogUsername;
+  private String catalogPassword;
+  private String catalogTokenUrl;
+  private String catalogClientId;
+  private String catalogClientSecret;
 
   public GraphCatalogWriter( String catalogUrl,
                              String catalogUsername,
@@ -62,25 +72,46 @@ public class GraphCatalogWriter extends BaseGraphWriter {
                              String catalogClientId,
                              String catalogClientSecret ) {
     super();
-    lineageClient = new CatalogLineageClient( catalogUrl,
-            catalogUsername,
-            catalogPassword,
-            catalogTokenUrl,
-            catalogClientId,
-            catalogClientSecret );
+    this.catalogUrl = catalogUrl;
+    this.catalogUsername = catalogUsername;
+    this.catalogPassword = catalogPassword;
+    this.catalogTokenUrl = catalogTokenUrl;
+    this.catalogClientId = catalogClientId;
+    this.catalogClientSecret = catalogClientSecret;
   }
 
-  @VisibleForTesting
-  GraphCatalogWriter( CatalogLineageClient client ) {
-    lineageClient = client;
+  private void createCatalogClient( String catalogUrl, String catalogUsername, String catalogPassword, String catalogTokenUrl,
+                          String catalogClientId, String catalogClientSecret ) {
+    if ( null != this.getCatalogLineageClientProvider() ) {
+      try {
+        lineageClient = catalogLineageClientProvider.getCatalogLineageClient(
+          catalogUrl,
+          catalogUsername,
+          catalogPassword,
+          catalogTokenUrl,
+          catalogClientId,
+          catalogClientSecret );
+      } catch ( ServiceUnavailableException e ) {
+        // logging at debug level because this could happen if the catalog service isn't loaded yet, or the service
+        // may not exist or be enabled in this profile
+        log.debug( e );
+      }
+    }
   }
 
   public boolean clientConfigured() {
-    return lineageClient.urlConfigured();
+    if ( null == lineageClient ) {
+      createCatalogClient( catalogUrl, catalogUsername, catalogPassword, catalogTokenUrl, catalogClientId, catalogClientSecret );
+    }
+    return null != lineageClient && lineageClient.urlConfigured();
   }
 
   @Override
   public void outputGraphImpl( Graph graph, OutputStream out ) throws IOException {
+
+    if ( !clientConfigured() ) {
+      log.info( "Could not get a catalog client; no catalog lineage processing." );
+    }
 
     log.info( "Stating lineage processing." );
 
@@ -95,30 +126,7 @@ public class GraphCatalogWriter extends BaseGraphWriter {
                     .in( DictionaryConst.LINK_READBY )
                     .cast( Vertex.class );
     List<Vertex> inputVertexes = inputNodesPipe.toList();
-    inputVertexes.forEach( vertex -> {
-      // handles resources read by a step that have a PATH property
-      String sourceName = vertex.getProperty( DictionaryConst.PROPERTY_PATH );
-      if ( propertyPopulated( sourceName ) ) {
-        LineageDataResource dataResource = new LineageDataResource( getSourceName( sourceName ) );
-        if ( hasPropertyValue( vertex, DictionaryConst.PROPERTY_FILE_SCHEME, "hdfs" ) ) {
-          dataResource.parseHdfsPath( sourceName );
-        } else {
-          dataResource.setPath( sourceName );
-        }
-        dataResource.setVertexId( vertex.getId() );
-        dataResource.setFields( getDatasourceFields( sourceName, graph ) );
-        inputSources.add( dataResource );
-      }
-      // handles resources ready by a step that have a query property
-      String queryString = vertex.getProperty( DictionaryConst.PROPERTY_QUERY );
-      if ( propertyPopulated( queryString ) ) {
-        LineageDataResource dataResource = new LineageDataResource( queryString );
-        dataResource.setVertexId( vertex.getId() );
-        findDbConnectionProperties( vertex, dataResource, DictionaryConst.LINK_READBY );
-        dataResource.setFields( getQueryFields( queryString, graph ) );
-        inputSources.add( dataResource );
-      }
-    } );
+    inputVertexes.forEach( vertex -> processInputs( graph, inputSources, vertex ) );
 
     // Get output data sources and fields
     GremlinPipeline<Graph, Vertex> outputNodesPipe =
@@ -128,30 +136,7 @@ public class GraphCatalogWriter extends BaseGraphWriter {
                     .out( DictionaryConst.LINK_WRITESTO )
                     .cast( Vertex.class );
     List<Vertex> outputVertexes = outputNodesPipe.toList();
-    outputVertexes.forEach( vertex -> {
-      // handles resources written to by a step that have a PATH property
-      String sourceName = vertex.getProperty( DictionaryConst.PROPERTY_PATH );
-      if ( sourceName != null && !sourceName.equals( "" ) ) {
-        LineageDataResource dataResource = new LineageDataResource( getSourceName( sourceName ) );
-        dataResource.setVertexId( vertex.getId() );
-        dataResource.setPath( sourceName );
-        dataResource.setFields( getDatasourceFields( sourceName, graph ) );
-        outputTargets.add( dataResource );
-      }
-      // handles tables written to by a step
-      String resourceType = vertex.getProperty( DictionaryConst.PROPERTY_TYPE );
-      if ( propertyPopulated( resourceType ) && resourceType.equals( DictionaryConst.NODE_TYPE_DATA_TABLE ) ) {
-        String tableName = vertex.getProperty( DictionaryConst.PROPERTY_TABLE );
-        if ( propertyPopulated( tableName ) ) {
-          LineageDataResource dataResource = new LineageDataResource( tableName );
-          dataResource.setVertexId( vertex.getId() );
-          findDbConnectionProperties( vertex, dataResource, DictionaryConst.LINK_WRITESTO );
-          dataResource.setFields( getTableFields( tableName, graph ) );
-          dataResource.setDbSchema( vertex.getProperty( DictionaryConst.PROPERTY_SCHEMA ) );
-          outputTargets.add( dataResource );
-        }
-      }
-    } );
+    outputVertexes.forEach( vertex -> processOutputs( graph, outputTargets, vertex ) );
 
     // Trace output fields to source fields
     linkTargetFieldsToSources( outputTargets, inputSources, graph );
@@ -163,6 +148,71 @@ public class GraphCatalogWriter extends BaseGraphWriter {
     }
 
     log.info( "Lineage processing done." );
+  }
+
+  private void processOutputs( Graph graph, ArrayList<LineageDataResource> outputTargets, Vertex vertex ) {
+    // handles resources written to by a step that have a PATH property
+    String sourceName = vertex.getProperty( DictionaryConst.PROPERTY_PATH );
+    if ( propertyPopulated( sourceName ) ) {
+      LineageDataResource dataResource =
+        getLineageDataResourceFromFileVertex( graph, vertex, sourceName );
+      outputTargets.add( dataResource );
+    }
+    // handles tables written to by a step
+    String resourceType = vertex.getProperty( DictionaryConst.PROPERTY_TYPE );
+    if ( propertyPopulated( resourceType ) && resourceType.equals( DictionaryConst.NODE_TYPE_DATA_TABLE ) ) {
+      String tableName = vertex.getProperty( DictionaryConst.PROPERTY_TABLE );
+      if ( propertyPopulated( tableName ) ) {
+        LineageDataResource dataResource =
+          getLineageDataResourceFromTableVertex( graph, vertex, tableName );
+        outputTargets.add( dataResource );
+      }
+    }
+  }
+
+  @NotNull private LineageDataResource getLineageDataResourceFromTableVertex( Graph graph, Vertex vertex, String tableName ) {
+    LineageDataResource dataResource = new LineageDataResource( tableName );
+    dataResource.setVertexId( vertex.getId() );
+    findDbConnectionProperties( vertex, dataResource, DictionaryConst.LINK_WRITESTO );
+    dataResource.setFields( getTableFields( tableName, graph ) );
+    dataResource.setDbSchema( vertex.getProperty( DictionaryConst.PROPERTY_SCHEMA ) );
+    return dataResource;
+  }
+
+  private void processInputs( Graph graph, ArrayList<LineageDataResource> inputSources, Vertex vertex ) {
+    // handles resources read by a step that have a PATH property
+    String sourceName = vertex.getProperty( DictionaryConst.PROPERTY_PATH );
+    if ( propertyPopulated( sourceName ) ) {
+      LineageDataResource dataResource =
+        getLineageDataResourceFromFileVertex( graph, vertex, sourceName );
+      inputSources.add( dataResource );
+    }
+    // handles resources ready by a step that have a query property
+    String queryString = vertex.getProperty( DictionaryConst.PROPERTY_QUERY );
+    if ( propertyPopulated( queryString ) ) {
+      LineageDataResource dataResource = getLineageDataResourceFromQueryVertex( graph, vertex, queryString );
+      inputSources.add( dataResource );
+    }
+  }
+
+  @NotNull private LineageDataResource getLineageDataResourceFromQueryVertex( Graph graph, Vertex vertex, String queryString ) {
+    LineageDataResource dataResource = new LineageDataResource( queryString );
+    dataResource.setVertexId( vertex.getId() );
+    findDbConnectionProperties( vertex, dataResource, DictionaryConst.LINK_READBY );
+    dataResource.setFields( getQueryFields( queryString, graph ) );
+    return dataResource;
+  }
+
+  @NotNull private LineageDataResource getLineageDataResourceFromFileVertex( Graph graph, Vertex vertex, String sourceName ) {
+    LineageDataResource dataResource = new LineageDataResource( getSourceName( sourceName ) );
+    if ( hasPropertyValue( vertex, DictionaryConst.PROPERTY_FILE_SCHEME, "hdfs" ) ) {
+      dataResource.parseHdfsPath( sourceName );
+    } else {
+      dataResource.setPath( sourceName );
+    }
+    dataResource.setVertexId( vertex.getId() );
+    dataResource.setFields( getDatasourceFields( sourceName, graph ) );
+    return dataResource;
   }
 
   private void findDbConnectionProperties( Vertex vertex, LineageDataResource dataResource, String readOrWrite ) {
@@ -340,5 +390,14 @@ public class GraphCatalogWriter extends BaseGraphWriter {
   private boolean hasPropertyValue( Vertex v, String propertyName, String propertyVal ) {
     String vertexPropertyValue = v.getProperty( propertyName );
     return propertyPopulated( vertexPropertyValue ) && vertexPropertyValue.equals( propertyVal );
+  }
+
+  public ICatalogLineageClientProvider getCatalogLineageClientProvider() {
+    return catalogLineageClientProvider;
+  }
+
+  public void setCatalogLineageClientProvider(
+    ICatalogLineageClientProvider catalogLineageClientProvider ) {
+    this.catalogLineageClientProvider = catalogLineageClientProvider;
   }
 }

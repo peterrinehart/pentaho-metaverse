@@ -21,11 +21,11 @@
  ******************************************************************************/
 
 
-package org.pentaho.metaverse.graph.catalog;
+package org.pentaho.metaverse.api.model.catalog;
 
 import java.util.Objects;
 
-import static org.pentaho.metaverse.util.MetaverseUtil.safeStringMatch;
+import static org.pentaho.metaverse.api.analyzer.kettle.KettleAnalyzerUtil.safeStringMatch;
 
 public class FieldLevelRelationship {
 

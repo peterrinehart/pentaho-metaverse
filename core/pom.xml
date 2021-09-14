@@ -275,7 +275,7 @@
       <classifier>tests</classifier>
       <scope>test</scope>
     </dependency>
-      <dependency>
+      <!--dependency>
         <groupId>com.pentaho.di.plugins</groupId>
         <artifactId>catalog-plugin-api</artifactId>
         <version>${project.version}</version>
@@ -286,7 +286,7 @@
         <artifactId>catalog-plugin-core</artifactId>
         <version>${project.version}</version>
         <scope>provided</scope>
-      </dependency>
+      </dependency-->
   </dependencies>
   <build>
     <plugins>
