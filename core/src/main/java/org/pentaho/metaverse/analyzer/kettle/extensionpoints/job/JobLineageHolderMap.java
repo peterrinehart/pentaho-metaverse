@@ -28,6 +28,7 @@ import org.pentaho.di.trans.Trans;
 import org.pentaho.metaverse.analyzer.kettle.extensionpoints.trans.TransLineageHolderMap;
 import org.pentaho.metaverse.api.IMetaverseBuilder;
 import org.pentaho.metaverse.api.model.LineageHolder;
+import org.pentaho.metaverse.impl.MetaverseBuilder;
 import org.pentaho.metaverse.util.MetaverseBeanUtil;
 
 import java.util.Collections;
@@ -132,8 +133,7 @@ public class JobLineageHolderMap {
 
   protected IMetaverseBuilder getDefaultMetaverseBuilder() {
     // always try to get a new builder if this method is called. otherwise we will end up with overlapping graphs
-    IMetaverseBuilder newBuilder =
-      (IMetaverseBuilder) MetaverseBeanUtil.getInstance().get( "IMetaverseBuilderPrototype" );
+    IMetaverseBuilder newBuilder = new MetaverseBuilder();
     if ( newBuilder == null ) {
       return defaultMetaverseBuilder;
     } else {

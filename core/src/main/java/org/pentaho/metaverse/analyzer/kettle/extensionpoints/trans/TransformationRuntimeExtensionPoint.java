@@ -2,7 +2,7 @@
  *
  * Pentaho Data Integration
  *
- * Copyright (C) 2002-2021 by Hitachi Vantara : http://www.pentaho.com
+ * Copyright (C) 2002-2022 by Hitachi Vantara : http://www.pentaho.com
  *
  *******************************************************************************
  *
@@ -36,6 +36,7 @@ import org.pentaho.di.trans.Trans;
 import org.pentaho.di.trans.TransListener;
 import org.pentaho.di.trans.TransMeta;
 import org.pentaho.dictionary.DictionaryConst;
+import org.pentaho.metaverse.analyzer.kettle.TransformationAnalyzer;
 import org.pentaho.metaverse.analyzer.kettle.extensionpoints.BaseRuntimeExtensionPoint;
 import org.pentaho.metaverse.api.IDocument;
 import org.pentaho.metaverse.api.IDocumentAnalyzer;
@@ -51,7 +52,11 @@ import org.pentaho.metaverse.api.model.LineageHolder;
 import org.pentaho.metaverse.api.model.IExternalResourceInfo;
 import org.pentaho.metaverse.api.model.JdbcResourceInfo;
 import org.pentaho.metaverse.api.model.kettle.MetaverseExtensionPoint;
+import org.pentaho.metaverse.graph.GraphCatalogWriter;
+import org.pentaho.metaverse.graph.GraphMLWriter;
+import org.pentaho.metaverse.impl.LineageWriter;
 import org.pentaho.metaverse.impl.MetaverseCompletionService;
+import org.pentaho.metaverse.impl.VfsLineageWriter;
 import org.pentaho.metaverse.impl.model.ExecutionProfile;
 import org.pentaho.metaverse.impl.model.ParamInfo;
 import org.pentaho.metaverse.messages.Messages;
@@ -76,6 +81,18 @@ import java.util.concurrent.Future;
 public class TransformationRuntimeExtensionPoint extends BaseRuntimeExtensionPoint implements TransListener {
 
   private static final Logger log = LogManager.getLogger( TransformationRuntimeExtensionPoint.class );
+
+  public TransformationRuntimeExtensionPoint() {
+    super();
+    this.setDocumentAnalyzer( new TransformationAnalyzer() );
+    VfsLineageWriter lineageWriter = new VfsLineageWriter();
+    lineageWriter.setGraphWriter( new GraphMLWriter() );
+    //TODO: get these properties from the config file
+    //TODO: catalog step needs to expose the ICatalogLineageProvider as a service via kettle plugin system
+    lineageWriter.setCatalogWriter( new GraphCatalogWriter( "", "", "", "", "", "" ) );
+    //TODO: get this property from config file
+    this.setRuntimeEnabled( true );
+  }
 
   /**
    * Callback when a transformation is about to be started

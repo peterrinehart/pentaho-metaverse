@@ -31,6 +31,18 @@ import java.util.UUID;
 
 public class MetaverseObjectFactory implements IMetaverseObjectFactory {
 
+  private static MetaverseObjectFactory instance;
+
+  private MetaverseObjectFactory() {
+  }
+
+  public static MetaverseObjectFactory getInstance() {
+    if ( null == instance ) {
+      instance = new MetaverseObjectFactory();
+    }
+    return instance;
+  }
+
   @Override
   public IDocument createDocumentObject() {
     return new MetaverseDocument( );

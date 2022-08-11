@@ -44,11 +44,28 @@ public class LineageRepository extends SimpleRepository {
   Map<ObjectId, Map<String, Object>> jobEntryAttributeCache;
   Map<ObjectId, List<Map<String, Object>>> jobEntryFieldCache;
 
-  public LineageRepository() {
-    stepAttributeCache = new HashMap<ObjectId, Map<String, Object>>();
-    stepFieldCache = new HashMap<ObjectId, List<Map<String, Object>>>();
-    jobEntryAttributeCache = new HashMap<ObjectId, Map<String, Object>>();
-    jobEntryFieldCache = new HashMap<ObjectId, List<Map<String, Object>>>();
+  private static LineageRepository instance;
+  private static LineageRepository readInstance;
+
+  public static LineageRepository getInstance() {
+    if ( null == instance ) {
+      instance = new LineageRepository();
+    }
+    return instance;
+  }
+
+  public static LineageRepository getReadInstance() {
+    if ( null == readInstance ) {
+      readInstance = new LineageRepository();
+    }
+    return readInstance;
+  }
+
+  private LineageRepository() {
+    stepAttributeCache = new HashMap<>();
+    stepFieldCache = new HashMap<>();
+    jobEntryAttributeCache = new HashMap<>();
+    jobEntryFieldCache = new HashMap<>();
   }
 
   @Override public boolean getStepAttributeBoolean( ObjectId id_step, int nr, String code, boolean def )

@@ -451,7 +451,7 @@
   </reference-list>
 
   <bean id="IStepExternalResourceConsumerProvider"
-        class="org.pentaho.metaverse.analyzer.kettle.step.StepExternalResourceConsumerProvider"
+        class="org.pentaho.metaverse.analyzer.kettlet.sep.StepExternalResourceConsumerProvider"
         scope="singleton">
     <property name="externalResourceConsumers" ref="stepExternalResourceConsumerRefList"/>
   </bean>

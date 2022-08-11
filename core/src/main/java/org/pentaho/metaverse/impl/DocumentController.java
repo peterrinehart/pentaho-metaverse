@@ -36,6 +36,7 @@ import org.pentaho.metaverse.api.IMetaverseObjectFactory;
 import org.pentaho.metaverse.api.IRequiresMetaverseBuilder;
 import org.pentaho.metaverse.api.MetaverseAnalyzerException;
 import org.pentaho.metaverse.api.MetaverseComponentDescriptor;
+import org.pentaho.metaverse.api.MetaverseObjectFactory;
 import org.pentaho.metaverse.messages.Messages;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,6 +54,15 @@ import java.util.concurrent.Future;
  * Coordinates passing IDocumentEvent's to the appropriate IDocumentAnalyzer's
  */
 public class DocumentController implements IDocumentController, IDocumentListener, IRequiresMetaverseBuilder {
+
+  private static DocumentController instance;
+
+  public static DocumentController getInstance() {
+    if ( null == instance ) {
+      instance = new DocumentController();
+    }
+    return instance;
+  }
 
   /**
    * The metaverse builder.

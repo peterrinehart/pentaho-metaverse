@@ -2,7 +2,7 @@
  *
  * Pentaho Data Integration
  *
- * Copyright (C) 2002-2018 by Hitachi Vantara : http://www.pentaho.com
+ * Copyright (C) 2002-2022 by Hitachi Vantara : http://www.pentaho.com
  *
  *******************************************************************************
  *
@@ -22,6 +22,8 @@
 
 package org.pentaho.metaverse.analyzer.kettle.step;
 
+import com.google.common.annotations.VisibleForTesting;
+import org.jaxen.expr.Step;
 import org.pentaho.di.trans.step.BaseStepMeta;
 import org.pentaho.metaverse.api.analyzer.kettle.BaseKettleMetaverseComponent;
 import org.pentaho.metaverse.api.analyzer.kettle.step.IClonableStepAnalyzer;
@@ -40,6 +42,19 @@ import java.util.Set;
  * StepAnalyzerProvider maintains a collection of analyzer objects capable of analyzing various PDI steps
  */
 public class StepAnalyzerProvider extends BaseKettleMetaverseComponent implements IStepAnalyzerProvider {
+
+  private static StepAnalyzerProvider instance;
+
+  @VisibleForTesting
+  StepAnalyzerProvider() {
+  }
+
+  public static StepAnalyzerProvider getInstance() {
+    if ( null == instance ) {
+      instance = new StepAnalyzerProvider();
+    }
+    return instance;
+  }
 
   /**
    * The set of step analyzers.
