@@ -297,7 +297,9 @@ public class TransLineageHolderMapTest {
     transLineageHolderMap.putLineageHolder( parentTrans, mockParentHolder );
     mockParentHolder.setMetaverseBuilder( null );
 
-    assertEquals( defaultBuilder, transLineageHolderMap.getMetaverseBuilder( trans ) );
+    // getting a new builder in TransLineageHolderMap.getDefaultBuilder should never fail now
+    // unsure how it could in the first place other than unit tests
+    assertNotEquals( defaultBuilder, transLineageHolderMap.getMetaverseBuilder( trans ) );
 
     mockParentHolder.setMetaverseBuilder( mockParentBuilder );
     builder = transLineageHolderMap.getMetaverseBuilder( trans );

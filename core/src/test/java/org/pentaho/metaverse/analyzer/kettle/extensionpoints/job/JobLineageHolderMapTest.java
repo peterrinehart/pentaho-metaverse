@@ -162,7 +162,9 @@ public class JobLineageHolderMapTest {
     jobLineageHolderMap.putLineageHolder( parentJob, mockParentHolder );
     mockParentHolder.setMetaverseBuilder( null );
 
-    assertEquals( defaultBuilder, jobLineageHolderMap.getMetaverseBuilder( job ) );
+    // getting a new builder in JobLineageHolderMap.getDefaultBuilder should never fail now
+    // unsure how it could in the first place other than unit tests
+    assertNotEquals( defaultBuilder, jobLineageHolderMap.getMetaverseBuilder( job ) );
 
     mockParentHolder.setMetaverseBuilder( mockParentBuilder );
     builder = jobLineageHolderMap.getMetaverseBuilder( job );

@@ -164,6 +164,7 @@ public class TransformationRuntimeExtensionPointTest {
     verify( ext, never() ).populateExecutionProfile(
       Mockito.any( IExecutionProfile.class ), eq( trans ) );
 
+    Mockito.when( KettleAnalyzerUtil.buildDocument( any(), any(), any(), any() ) ).thenReturn( mock( IDocument.class ) );
     ext.transFinished( trans );
     verify( ext, times( 1 ) ).populateExecutionProfile( Mockito.any( IExecutionProfile.class ), eq( trans ) );
     verify( ext, times( 1 ) ).runAnalyzers( eq( trans ) );
@@ -197,6 +198,7 @@ public class TransformationRuntimeExtensionPointTest {
     when( ext.allowedAsync() ).thenReturn( false );
 
     PowerMockito.mockStatic( ExtensionPointHandler.class );
+    Mockito.when( KettleAnalyzerUtil.buildDocument( any(), any(), any(), any() ) ).thenReturn( mock( IDocument.class ) );
     ext.transFinished( trans );
 
     verify( ext ).createLineGraph( trans );
@@ -229,6 +231,7 @@ public class TransformationRuntimeExtensionPointTest {
     Mockito.reset( lineageWriter );
 
     setupMetaverseConfig( true, true );
+    Mockito.when( KettleAnalyzerUtil.buildDocument( any(), any(), any(), any() ) ).thenReturn( mock( IDocument.class ) );
     // set a parent trans  - since MetaverseConfig.generateSubGraph() returns true, lineageWriter.outputLineageGraph
     // should still get called
     trans.setParentTrans( new Trans() );
@@ -241,6 +244,7 @@ public class TransformationRuntimeExtensionPointTest {
     // configure MetaverseConfig.generateSubGraph() to returns false, lineageWriter.outputLineageGraph should never
     // be called
     setupMetaverseConfig( true, false );
+    Mockito.when( KettleAnalyzerUtil.buildDocument( any(), any(), any(), any() ) ).thenReturn( mock( IDocument.class ) );
     ext.transFinished( trans );
     verify( lineageWriter, never() )
       .outputLineageGraph( TransLineageHolderMap.getInstance().getLineageHolder( trans ) );
@@ -250,6 +254,7 @@ public class TransformationRuntimeExtensionPointTest {
   public void testTransFinishedAsync() throws Exception {
     TransformationRuntimeExtensionPoint ext = spy( transExtensionPoint );
     when( ext.allowedAsync() ).thenReturn( true );
+    Mockito.when( KettleAnalyzerUtil.buildDocument( any(), any(), any(), any() ) ).thenReturn( mock( IDocument.class ) );
     ext.transFinished( trans );
 
     verify( ext ).createLineGraphAsync( trans );

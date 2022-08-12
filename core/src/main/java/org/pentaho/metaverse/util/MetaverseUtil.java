@@ -75,7 +75,7 @@ public class MetaverseUtil {
       return documentController;
     }
     try {
-      documentController = (IDocumentController) MetaverseBeanUtil.getInstance().get( "IDocumentController" );
+      documentController = (IDocumentController) MetaverseBeanUtil.getInstance().get( IDocumentController.class );
     } catch ( Exception e ) {
       // Just return null
     }

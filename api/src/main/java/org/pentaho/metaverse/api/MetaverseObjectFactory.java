@@ -22,6 +22,7 @@
 
 package org.pentaho.metaverse.api;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.pentaho.dictionary.DictionaryConst;
 import org.pentaho.dictionary.MetaverseLink;
 import org.pentaho.dictionary.MetaverseTransientNode;
@@ -33,7 +34,8 @@ public class MetaverseObjectFactory implements IMetaverseObjectFactory {
 
   private static MetaverseObjectFactory instance;
 
-  private MetaverseObjectFactory() {
+  @VisibleForTesting
+  public MetaverseObjectFactory() {
   }
 
   public static MetaverseObjectFactory getInstance() {

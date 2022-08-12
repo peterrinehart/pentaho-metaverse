@@ -65,8 +65,9 @@ public class StepExternalResourceConsumerListenerTest {
     stepCombi.stepMeta = mock( StepMeta.class );
 
     stepExtensionPoint.callExtensionPoint( null, stepCombi );
+    StepExternalResourceConsumerProvider.clearInstance();
     Map<Class<? extends BaseStepMeta>, Set<IStepExternalResourceConsumer>> stepConsumerMap =
-      new StepExternalResourceConsumerProvider().getStepConsumerMap();
+      StepExternalResourceConsumerProvider.getInstance().getStepConsumerMap();
     Set<IStepExternalResourceConsumer> consumers = new HashSet<IStepExternalResourceConsumer>();
     stepConsumerMap.put( bsm.getClass(), consumers );
     stepExtensionPoint.callExtensionPoint( null, stepCombi );

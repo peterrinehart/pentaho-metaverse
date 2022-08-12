@@ -62,8 +62,9 @@ public class JobEntryExternalResourceConsumerListenerTest {
     jobEntryExtensionPoint.callExtensionPoint( null, jobExec );
 
     // Adda consumer
+    JobEntryExternalResourceConsumerProvider.clearInstance();
     Map<Class<? extends JobEntryBase>, Set<IJobEntryExternalResourceConsumer>> jobEntryConsumerMap =
-      new JobEntryExternalResourceConsumerProvider().getJobEntryConsumerMap();
+      JobEntryExternalResourceConsumerProvider.getInstance().getJobEntryConsumerMap();
     Set<IJobEntryExternalResourceConsumer> consumers = new HashSet<IJobEntryExternalResourceConsumer>();
     jobEntryConsumerMap.put( jobEntryBase.getClass(), consumers );
     jobEntryExtensionPoint.callExtensionPoint( null, jobExec );

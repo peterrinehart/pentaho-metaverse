@@ -29,7 +29,6 @@ import org.pentaho.metaverse.analyzer.kettle.extensionpoints.trans.TransLineageH
 import org.pentaho.metaverse.api.IMetaverseBuilder;
 import org.pentaho.metaverse.api.model.LineageHolder;
 import org.pentaho.metaverse.impl.MetaverseBuilder;
-import org.pentaho.metaverse.util.MetaverseBeanUtil;
 
 import java.util.Collections;
 import java.util.Map;

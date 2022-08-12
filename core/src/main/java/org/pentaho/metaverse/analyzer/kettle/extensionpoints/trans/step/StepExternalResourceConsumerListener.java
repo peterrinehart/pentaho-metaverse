@@ -64,7 +64,7 @@ public class StepExternalResourceConsumerListener implements ExtensionPointInter
   public void callExtensionPoint( LogChannelInterface log, Object object ) throws KettleException {
     if ( stepConsumerProvider == null ) {
       stepConsumerProvider = (IStepExternalResourceConsumerProvider)
-        MetaverseBeanUtil.getInstance().get( "IStepExternalResourceConsumerProvider" );
+        MetaverseBeanUtil.getInstance().get( IStepExternalResourceConsumerProvider.class );
     }
     StepMetaDataCombi stepCombi = (StepMetaDataCombi) object;
     if ( stepCombi != null ) {

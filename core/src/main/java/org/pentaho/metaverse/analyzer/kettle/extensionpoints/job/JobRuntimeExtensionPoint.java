@@ -88,7 +88,7 @@ public class JobRuntimeExtensionPoint extends BaseRuntimeExtensionPoint implemen
     //TODO: get these properties from the config file
     //TODO: catalog step needs to expose the ICatalogLineageProvider as a service via kettle plugin system
     lineageWriter.setCatalogWriter( new GraphCatalogWriter( "", "", "", "", "", "" ) );
-    //TODO: get this property from config file
+    //TODO: get this property from kettle properties file
     this.setRuntimeEnabled( true );
   }
 

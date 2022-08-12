@@ -22,6 +22,7 @@
 
 package org.pentaho.metaverse.analyzer.kettle.extensionpoints;
 
+import org.jaxen.expr.Step;
 import org.junit.Before;
 import org.junit.Test;
 import org.pentaho.di.trans.step.BaseStepMeta;
@@ -38,7 +39,8 @@ public class StepExternalResourceConsumerProviderTest {
 
   @Before
   public void setUp() throws Exception {
-    stepExternalResourceConsumerProvider = new StepExternalResourceConsumerProvider();
+    StepExternalResourceConsumerProvider.clearInstance();
+    stepExternalResourceConsumerProvider = StepExternalResourceConsumerProvider.getInstance();
   }
 
   @Test

@@ -5,6 +5,14 @@ import org.pentaho.di.core.annotations.LifecyclePlugin;
 import org.pentaho.di.core.lifecycle.LifeEventHandler;
 import org.pentaho.di.core.lifecycle.LifecycleException;
 import org.pentaho.di.core.lifecycle.LifecycleListener;
+import org.pentaho.metaverse.analyzer.kettle.JobAnalyzer;
+import org.pentaho.metaverse.analyzer.kettle.TransformationAnalyzer;
+import org.pentaho.metaverse.analyzer.kettle.jobentry.JobEntryAnalyzerProvider;
+import org.pentaho.metaverse.analyzer.kettle.jobentry.JobEntryExternalResourceConsumerProvider;
+import org.pentaho.metaverse.analyzer.kettle.jobentry.job.JobJobEntryAnalyzer;
+import org.pentaho.metaverse.analyzer.kettle.jobentry.transjob.TransJobEntryAnalyzer;
+import org.pentaho.metaverse.analyzer.kettle.step.StepAnalyzerProvider;
+import org.pentaho.metaverse.analyzer.kettle.step.StepExternalResourceConsumerProvider;
 import org.pentaho.metaverse.analyzer.kettle.step.calculator.CalculatorStepAnalyzer;
 import org.pentaho.metaverse.analyzer.kettle.step.csvfileinput.CsvFileInputExternalResourceConsumer;
 import org.pentaho.metaverse.analyzer.kettle.step.csvfileinput.CsvFileInputStepAnalyzer;
@@ -41,8 +49,11 @@ import org.pentaho.metaverse.analyzer.kettle.step.textfileoutput.TextFileOutputE
 import org.pentaho.metaverse.analyzer.kettle.step.textfileoutput.TextFileOutputStepAnalyzer;
 import org.pentaho.metaverse.analyzer.kettle.step.transexecutor.TransExecutorStepAnalyzer;
 import org.pentaho.metaverse.analyzer.kettle.step.valuemapper.ValueMapperStepAnalyzer;
+import org.pentaho.metaverse.api.MetaverseObjectFactory;
 import org.pentaho.metaverse.api.analyzer.kettle.jobentry.JobEntryDatabaseConnectionAnalyzer;
 import org.pentaho.metaverse.api.analyzer.kettle.step.StepDatabaseConnectionAnalyzer;
+import org.pentaho.metaverse.graph.BlueprintsGraphMetaverseReader;
+import org.pentaho.metaverse.impl.DocumentController;
 import org.pentaho.metaverse.impl.MetaverseBuilder;
 import org.pentaho.platform.engine.core.system.PentahoSystem;
 
@@ -50,6 +61,11 @@ import org.pentaho.platform.engine.core.system.PentahoSystem;
 public class MetaversePluginLifecycleListener implements LifecycleListener {
 
   @Override public void onStart( LifeEventHandler lifeEventHandler ) throws LifecycleException {
+
+    // REGISTER OBJECT FACTORY
+    PentahoSystem.registerObject( MetaverseObjectFactory.getInstance() );
+
+    // DB CONNECTION ANALYZERS
     StepDatabaseConnectionAnalyzer stepDatabaseConnectionAnalyzer = new StepDatabaseConnectionAnalyzer();
     stepDatabaseConnectionAnalyzer.setMetaverseBuilder( MetaverseBuilder.getInstance() );
     PentahoSystem.registerObject( stepDatabaseConnectionAnalyzer );
@@ -125,6 +141,32 @@ public class MetaversePluginLifecycleListener implements LifecycleListener {
     PentahoSystem.registerObject( httpPostStepAnalyzer );
 
     PentahoSystem.registerObject( new SingleThreaderStepAnalyzer() );
+
+    //CREATE AND REGISTER JOB ENTRY ANALYZERS
+    PentahoSystem.registerObject( new TransJobEntryAnalyzer() );
+    PentahoSystem.registerObject( new JobJobEntryAnalyzer() );
+
+    //CREATE AND REGISTER PROVIDERS
+    // Providers will call PentahoSystem to get the analyzers they provide upon first invocation
+    // We can't assume other plugins registering step analyzers have initialized before this one
+    PentahoSystem.registerObject( StepAnalyzerProvider.getInstance() );
+    PentahoSystem.registerObject( JobEntryAnalyzerProvider.getInstance() );
+
+    PentahoSystem.registerObject( StepExternalResourceConsumerProvider.getInstance() );
+    PentahoSystem.registerObject( JobEntryExternalResourceConsumerProvider.getInstance() );
+
+    // DOCUMENT CONTROLLER
+    DocumentController documentController = DocumentController.getInstance();
+    documentController.setMetaverseObjectFactory( MetaverseObjectFactory.getInstance() );
+    documentController.setMetaverseBuilder( MetaverseBuilder.getInstance() );
+    TransformationAnalyzer transformationAnalyzer = new TransformationAnalyzer();
+    documentController.addClonableAnalyzer( transformationAnalyzer );
+    JobAnalyzer jobAnalyzer = new JobAnalyzer();
+    documentController.addClonableAnalyzer( jobAnalyzer );
+
+    // METAVERSE READER
+    PentahoSystem.registerObject( BlueprintsGraphMetaverseReader.getInstance() );
+
 
 
   }

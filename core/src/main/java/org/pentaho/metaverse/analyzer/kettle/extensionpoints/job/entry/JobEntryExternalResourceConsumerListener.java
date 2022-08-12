@@ -64,7 +64,7 @@ public class JobEntryExternalResourceConsumerListener implements ExtensionPointI
   public void callExtensionPoint( LogChannelInterface log, Object object ) throws KettleException {
     if ( jobEntryConsumerProvider == null ) {
       jobEntryConsumerProvider = (IJobEntryExternalResourceConsumerProvider)
-        MetaverseBeanUtil.getInstance().get( "IJobEntryExternalResourceConsumerProvider" );
+        MetaverseBeanUtil.getInstance().get( IJobEntryExternalResourceConsumerProvider.class );
     }
     JobExecutionExtension jobExec = (JobExecutionExtension) object;
     JobEntryCopy jobEntryCopy = jobExec.jobEntryCopy;

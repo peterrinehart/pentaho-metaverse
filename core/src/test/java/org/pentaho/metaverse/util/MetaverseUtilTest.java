@@ -46,7 +46,9 @@ import org.pentaho.metaverse.api.MetaverseException;
 import org.pentaho.metaverse.api.model.IOperation;
 import org.pentaho.metaverse.api.model.Operation;
 import org.pentaho.metaverse.api.model.Operations;
+import org.pentaho.metaverse.impl.DocumentController;
 import org.pentaho.metaverse.testutils.MetaverseTestUtils;
+import org.pentaho.platform.engine.core.system.PentahoSystem;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -75,16 +77,6 @@ public class MetaverseUtilTest {
 
     // Generate an exception
     MetaverseBeanUtil instance = MetaverseBeanUtil.getInstance();
-    BundleContext bundleContext = mock( BundleContext.class );
-    Bundle bundle = mock( Bundle.class );
-    when( bundleContext.getBundle() ).thenReturn( bundle );
-    instance.setBundleContext( bundleContext );
-
-    ServiceReference serviceReference = mock( ServiceReference.class );
-    BlueprintContainer service = mock( BlueprintContainer.class );
-    when( bundleContext.getService( Mockito.any( ServiceReference.class ) ) ).thenReturn( service );
-
-    when( service.getComponentInstance( "IDocumentController" ) ).thenReturn( documentController );
     assertNull( MetaverseUtil.getDocumentController() );
   }
 

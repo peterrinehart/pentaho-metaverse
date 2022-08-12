@@ -92,13 +92,13 @@ public class DIRepositoryLocatorTest implements IDocumentListener {
     DIRepositoryLocator locator = new DIRepositoryLocator();
     assertEquals( locator.getLocatorType(), DIRepositoryLocator.LOCATOR_TYPE );
     assertNotNull( locator.listeners );
-    assertTrue( locator.listeners.isEmpty() );
+    assertFalse( locator.listeners.isEmpty() );
   }
 
   @Test
   public void testConstructorWithListeners() {
     assertNotNull( spyLocator.listeners );
-    assertTrue( spyLocator.listeners.isEmpty() );
+    assertFalse( spyLocator.listeners.isEmpty() );
     List<IDocumentListener> listeners = new ArrayList<IDocumentListener>();
     listeners.add( mock( IDocumentListener.class ) );
     DIRepositoryLocator locator = new DIRepositoryLocator( listeners );

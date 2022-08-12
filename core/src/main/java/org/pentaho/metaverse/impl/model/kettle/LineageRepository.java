@@ -22,6 +22,7 @@
 
 package org.pentaho.metaverse.impl.model.kettle;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.pentaho.di.core.Condition;
 import org.pentaho.di.core.database.DatabaseMeta;
 import org.pentaho.di.core.exception.KettleException;
@@ -61,7 +62,8 @@ public class LineageRepository extends SimpleRepository {
     return readInstance;
   }
 
-  private LineageRepository() {
+  @VisibleForTesting
+  public LineageRepository() {
     stepAttributeCache = new HashMap<>();
     stepFieldCache = new HashMap<>();
     jobEntryAttributeCache = new HashMap<>();
