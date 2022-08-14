@@ -50,6 +50,7 @@
     <module>core</module>
     <module>web</module>
     <module>sample</module>
+    <module>assemblies</module>
   </modules>
   <scm>
     <connection>scm:git:git@github.com:pentaho/${project.artifactId}.git</connection>

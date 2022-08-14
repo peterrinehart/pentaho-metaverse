@@ -90,6 +90,7 @@ public class TransformationRuntimeExtensionPoint extends BaseRuntimeExtensionPoi
     //TODO: get these properties from the config file
     //TODO: catalog step needs to expose the ICatalogLineageProvider as a service via kettle plugin system
     lineageWriter.setCatalogWriter( new GraphCatalogWriter( "", "", "", "", "", "" ) );
+    this.setLineageWriter( lineageWriter );
     //TODO: get this property from kettle properties
     this.setRuntimeEnabled( true );
   }

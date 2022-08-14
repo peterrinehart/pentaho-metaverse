@@ -1,6 +1,5 @@
 package org.pentaho.metaverse.analyzer.kettle.lifecycle;
 
-import org.hibernate.sql.Select;
 import org.pentaho.di.core.annotations.LifecyclePlugin;
 import org.pentaho.di.core.lifecycle.LifeEventHandler;
 import org.pentaho.di.core.lifecycle.LifecycleException;
@@ -163,12 +162,10 @@ public class MetaversePluginLifecycleListener implements LifecycleListener {
     documentController.addClonableAnalyzer( transformationAnalyzer );
     JobAnalyzer jobAnalyzer = new JobAnalyzer();
     documentController.addClonableAnalyzer( jobAnalyzer );
+    PentahoSystem.registerObject( documentController );
 
     // METAVERSE READER
     PentahoSystem.registerObject( BlueprintsGraphMetaverseReader.getInstance() );
-
-
-
   }
 
   @Override public void onExit( LifeEventHandler lifeEventHandler ) throws LifecycleException {

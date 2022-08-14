@@ -2,7 +2,7 @@
  *
  * Pentaho Data Integration
  *
- * Copyright (C) 2002-2018 by Hitachi Vantara : http://www.pentaho.com
+ * Copyright (C) 2002-2022 by Hitachi Vantara : http://www.pentaho.com
  *
  *******************************************************************************
  *
@@ -29,10 +29,6 @@ import com.tinkerpop.blueprints.impls.tg.TinkerGraph;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
-import org.osgi.framework.Bundle;
-import org.osgi.framework.BundleContext;
-import org.osgi.framework.ServiceReference;
-import org.osgi.service.blueprint.container.BlueprintContainer;
 import org.pentaho.dictionary.DictionaryConst;
 import org.pentaho.metaverse.api.ChangeType;
 import org.pentaho.metaverse.api.IComponentDescriptor;
@@ -46,15 +42,17 @@ import org.pentaho.metaverse.api.MetaverseException;
 import org.pentaho.metaverse.api.model.IOperation;
 import org.pentaho.metaverse.api.model.Operation;
 import org.pentaho.metaverse.api.model.Operations;
-import org.pentaho.metaverse.impl.DocumentController;
 import org.pentaho.metaverse.testutils.MetaverseTestUtils;
-import org.pentaho.platform.engine.core.system.PentahoSystem;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.withSettings;
 
 public class MetaverseUtilTest {
 

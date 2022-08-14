@@ -84,6 +84,7 @@ public class VfsLineageWriter implements ILineageWriter {
   }
 
   public VfsLineageWriter() {
+    this.setOutputStrategy( MetaverseConfig.getInstance().getExecutionGenerationStrategy() );
   }
 
   @Override
