@@ -53,6 +53,7 @@ import org.pentaho.metaverse.api.model.kettle.MetaverseExtensionPoint;
 import org.pentaho.metaverse.graph.GraphCatalogWriter;
 import org.pentaho.metaverse.graph.GraphMLWriter;
 import org.pentaho.metaverse.impl.MetaverseCompletionService;
+import org.pentaho.metaverse.impl.MetaverseConfig;
 import org.pentaho.metaverse.impl.VfsLineageWriter;
 import org.pentaho.metaverse.impl.model.ExecutionProfile;
 import org.pentaho.metaverse.impl.model.ParamInfo;
@@ -88,6 +89,8 @@ public class JobRuntimeExtensionPoint extends BaseRuntimeExtensionPoint implemen
     //TODO: get these properties from the config file
     //TODO: catalog step needs to expose the ICatalogLineageProvider as a service via kettle plugin system
     lineageWriter.setCatalogWriter( new GraphCatalogWriter( "", "", "", "", "", "" ) );
+    lineageWriter.setOutputFolder( MetaverseConfig.getInstance().getExecutionOutputFolder() );
+    this.setLineageWriter( lineageWriter );
     //TODO: get this property from kettle properties file
     this.setRuntimeEnabled( true );
   }

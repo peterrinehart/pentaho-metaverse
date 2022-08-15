@@ -205,7 +205,7 @@ public class StepAnalyzerProviderTest {
     assertEquals( 2, provider.getAnalyzers().size() );
 
     provider.setStepAnalyzers( null );
-    assertNull( provider.getAnalyzers() );
+    assertTrue( provider.getAnalyzers().isEmpty() );
 
     // verify that "clonable" analyzers are added to the main analyzers list
     provider.setClonableStepAnalyzers( analyzers );
@@ -215,6 +215,6 @@ public class StepAnalyzerProviderTest {
     assertEquals( 2, provider.getAnalyzers().size() );
 
     provider.setClonableStepAnalyzers( null );
-    assertNull( provider.getAnalyzers() );
+    assertTrue( provider.getAnalyzers().isEmpty() );
   }
 }

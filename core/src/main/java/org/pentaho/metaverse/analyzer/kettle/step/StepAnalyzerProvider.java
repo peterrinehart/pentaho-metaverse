@@ -29,9 +29,11 @@ import org.pentaho.metaverse.api.analyzer.kettle.BaseKettleMetaverseComponent;
 import org.pentaho.metaverse.api.analyzer.kettle.step.IClonableStepAnalyzer;
 import org.pentaho.metaverse.api.analyzer.kettle.step.IStepAnalyzer;
 import org.pentaho.metaverse.api.analyzer.kettle.step.IStepAnalyzerProvider;
+import org.pentaho.platform.engine.core.system.PentahoSystem;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -73,6 +75,13 @@ public class StepAnalyzerProvider extends BaseKettleMetaverseComponent implement
    */
   @Override
   public List<IStepAnalyzer> getAnalyzers() {
+    if ( null == stepAnalyzers || stepAnalyzers.isEmpty() ) {
+      // could be the first time this has been invoked after startup; see who registered
+      // this obviously does not support dynamically adding/removing analyzers at runtime
+      stepAnalyzers = Collections.synchronizedList( new ArrayList<>() );
+      stepAnalyzers.addAll( PentahoSystem.getAll( IStepAnalyzer.class ) );
+      loadAnalyzerTypeMap();
+    }
     return stepAnalyzers;
   }
 

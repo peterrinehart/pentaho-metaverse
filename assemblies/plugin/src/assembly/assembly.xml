@@ -28,7 +28,7 @@
       <useProjectArtifact>false</useProjectArtifact>
       <excludes>
         <exclude>org.pentaho.*</exclude>
-        <exclude>com.tinkerpop.blueprints.*</exclude>
+        <exclude>com.tinkerpop.blueprints:*</exclude>
         <exclude>pentaho:pentaho-metaverse-core:jar</exclude>
       </excludes>
     </dependencySet>

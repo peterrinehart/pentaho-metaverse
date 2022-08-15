@@ -287,6 +287,7 @@ public class JobRuntimeExtensionPointTest {
     PowerMockito.mockStatic( MetaverseConfig.class );
     Mockito.when( MetaverseConfig.consolidateSubGraphs() ).thenReturn( consolidateSubGraphs );
     Mockito.when( MetaverseConfig.generateSubGraphs() ).thenReturn( generateSubGraphs );
+    Mockito.when( MetaverseConfig.getInstance() ).thenCallRealMethod();
     PowerMockito.mockStatic( KettleAnalyzerUtil.class );
     Mockito.when( KettleAnalyzerUtil.consolidateSubGraphs() ).thenReturn( consolidateSubGraphs );
   }
