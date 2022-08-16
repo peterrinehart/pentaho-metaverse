@@ -56,6 +56,7 @@ public class VfsLineageCollector implements ILineageCollector {
 
   public VfsLineageCollector() {
     format.setLenient( false );
+    this.setOutputFolder( MetaverseConfig.getInstance().getExecutionOutputFolder() );
   }
 
   /**

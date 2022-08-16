@@ -32,6 +32,7 @@ import org.mockito.internal.util.collections.Sets;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.pentaho.di.trans.step.BaseStepMeta;
 import org.pentaho.di.trans.steps.tableoutput.TableOutputMeta;
+import org.pentaho.metaverse.analyzer.kettle.step.tableoutput.TableOutputStepAnalyzer;
 import org.pentaho.metaverse.api.analyzer.kettle.step.IStepAnalyzer;
 
 import java.util.ArrayList;
@@ -85,17 +86,19 @@ public class StepAnalyzerProviderTest {
     provider.analyzerTypeMap.put( BaseStepMeta.class, baseStepAnalyzerSet );
     // Return the tableOutputStepAnalyzerSet set if TableOutputMeta analyzers are requested
     provider.analyzerTypeMap.put( TableOutputMeta.class, tableOutputStepAnalyzerSet );
+    provider.addAnalyzer( mock( GenericStepMetaAnalyzer.class ) );
+    provider.addAnalyzer( mock( TableOutputStepAnalyzer.class ) );
 
     List<IStepAnalyzer> analyzers = provider.getAnalyzers( new ArrayList() {{
       add( BaseStepMeta.class );
       add( TableOutputMeta.class );
     }} );
-    assertEquals( analyzers.size(), 2 );
+    assertEquals( 2, analyzers.size() );
 
     analyzers = provider.getAnalyzers( new HashSet() {{
       add( TableOutputMeta.class );
     }} );
-    assertEquals( analyzers.size(), 1 );
+    assertEquals( 1, analyzers.size() );
   }
 
   @Test

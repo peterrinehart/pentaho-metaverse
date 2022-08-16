@@ -54,6 +54,8 @@ import org.pentaho.metaverse.api.analyzer.kettle.step.StepDatabaseConnectionAnal
 import org.pentaho.metaverse.graph.BlueprintsGraphMetaverseReader;
 import org.pentaho.metaverse.impl.DocumentController;
 import org.pentaho.metaverse.impl.MetaverseBuilder;
+import org.pentaho.metaverse.impl.MetaverseDocumentLocatorProvider;
+import org.pentaho.metaverse.impl.VfsLineageCollector;
 import org.pentaho.platform.engine.core.system.PentahoSystem;
 
 @LifecyclePlugin( id = "MetaversePlugin", name = "MetaversePlugin" )
@@ -166,6 +168,8 @@ public class MetaversePluginLifecycleListener implements LifecycleListener {
 
     // METAVERSE READER
     PentahoSystem.registerObject( BlueprintsGraphMetaverseReader.getInstance() );
+    PentahoSystem.registerObject( MetaverseDocumentLocatorProvider.getInstance() );
+    PentahoSystem.registerObject( new VfsLineageCollector() );
   }
 
   @Override public void onExit( LifeEventHandler lifeEventHandler ) throws LifecycleException {
