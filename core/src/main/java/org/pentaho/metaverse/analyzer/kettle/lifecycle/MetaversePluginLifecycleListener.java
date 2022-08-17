@@ -1,6 +1,8 @@
 package org.pentaho.metaverse.analyzer.kettle.lifecycle;
 
+import org.pentaho.di.core.annotations.KettleLifecyclePlugin;
 import org.pentaho.di.core.annotations.LifecyclePlugin;
+import org.pentaho.di.core.lifecycle.KettleLifecycleListener;
 import org.pentaho.di.core.lifecycle.LifeEventHandler;
 import org.pentaho.di.core.lifecycle.LifecycleException;
 import org.pentaho.di.core.lifecycle.LifecycleListener;
@@ -51,6 +53,7 @@ import org.pentaho.metaverse.analyzer.kettle.step.valuemapper.ValueMapperStepAna
 import org.pentaho.metaverse.api.MetaverseObjectFactory;
 import org.pentaho.metaverse.api.analyzer.kettle.jobentry.JobEntryDatabaseConnectionAnalyzer;
 import org.pentaho.metaverse.api.analyzer.kettle.step.StepDatabaseConnectionAnalyzer;
+import org.pentaho.metaverse.client.LineageClient;
 import org.pentaho.metaverse.graph.BlueprintsGraphMetaverseReader;
 import org.pentaho.metaverse.impl.DocumentController;
 import org.pentaho.metaverse.impl.MetaverseBuilder;
@@ -58,11 +61,9 @@ import org.pentaho.metaverse.impl.MetaverseDocumentLocatorProvider;
 import org.pentaho.metaverse.impl.VfsLineageCollector;
 import org.pentaho.platform.engine.core.system.PentahoSystem;
 
-@LifecyclePlugin( id = "MetaversePlugin", name = "MetaversePlugin" )
-public class MetaversePluginLifecycleListener implements LifecycleListener {
-
-  @Override public void onStart( LifeEventHandler lifeEventHandler ) throws LifecycleException {
-
+@KettleLifecyclePlugin( id = "MetaversePlugin", name = "MetaversePlugin" )
+public class MetaversePluginLifecycleListener implements KettleLifecycleListener {
+  @Override public void onEnvironmentInit() throws LifecycleException {
     // REGISTER OBJECT FACTORY
     PentahoSystem.registerObject( MetaverseObjectFactory.getInstance() );
 
@@ -170,9 +171,10 @@ public class MetaversePluginLifecycleListener implements LifecycleListener {
     PentahoSystem.registerObject( BlueprintsGraphMetaverseReader.getInstance() );
     PentahoSystem.registerObject( MetaverseDocumentLocatorProvider.getInstance() );
     PentahoSystem.registerObject( new VfsLineageCollector() );
+    PentahoSystem.registerObject( new LineageClient() );
   }
 
-  @Override public void onExit( LifeEventHandler lifeEventHandler ) throws LifecycleException {
+  @Override public void onEnvironmentShutdown() {
 
   }
 }

@@ -34,7 +34,6 @@ import org.pentaho.metaverse.api.MetaverseLocatorException;
 import org.pentaho.metaverse.api.model.LineageRequest;
 import org.pentaho.metaverse.impl.MetaverseCompletionService;
 import org.pentaho.metaverse.messages.Messages;
-import org.pentaho.platform.engine.core.system.PentahoSystem;
 
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
@@ -56,7 +55,7 @@ import java.util.concurrent.ExecutionException;
 /**
  * REST endpoints for the accessing lineage artifacts.
  */
-@Path( "/lineage/api/metaverseservice" )
+@Path( "/api" )
 @ExternallyManagedLifecycle
 public class MetaverseService {
 
@@ -79,12 +78,6 @@ public class MetaverseService {
   public MetaverseService( IMetaverseReader metaverseReader, IDocumentLocatorProvider documentLocatorProvider ) {
     setMetaverseReader( metaverseReader );
     setDocumentLocatorProvider( documentLocatorProvider );
-  }
-
-  public MetaverseService() {
-    metaverseReader = PentahoSystem.get( IMetaverseReader.class );
-    documentLocatorProvider = PentahoSystem.get( IDocumentLocatorProvider.class );
-    lineageCollector = PentahoSystem.get( ILineageCollector.class );
   }
 
   public void setMetaverseReader( IMetaverseReader metaverseReader ) {

@@ -30,7 +30,6 @@ import org.pentaho.metaverse.api.analyzer.kettle.jobentry.IJobEntryAnalyzer;
 import org.pentaho.metaverse.api.analyzer.kettle.jobentry.IJobEntryAnalyzerProvider;
 import org.pentaho.metaverse.api.analyzer.kettle.step.IStepAnalyzer;
 import org.pentaho.metaverse.api.analyzer.kettle.step.IStepAnalyzerProvider;
-import org.pentaho.platform.engine.core.system.PentahoSystem;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -46,7 +45,7 @@ import java.util.Set;
 /**
  * Provides information about the lineage analyzers active in the system
  */
-@Path( "/lineage/api/info" )
+@Path( "/info" )
 public class AnalyzerInfoService {
 
   public static final int OK = 200;
@@ -54,11 +53,6 @@ public class AnalyzerInfoService {
 
   private IStepAnalyzerProvider stepAnalyzerProvider;
   private IJobEntryAnalyzerProvider jobEntryAnalyzerProvider;
-
-  public AnalyzerInfoService() {
-    stepAnalyzerProvider = PentahoSystem.get( IStepAnalyzerProvider.class );
-    jobEntryAnalyzerProvider = PentahoSystem.get( IJobEntryAnalyzerProvider.class );
-  }
 
   public IStepAnalyzerProvider getStepAnalyzerProvider() {
     return stepAnalyzerProvider;
